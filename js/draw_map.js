@@ -5,52 +5,10 @@ var opacity = 0.8;
 var demographic_num = d3.select('#demographic_num');
 var election_color = d3.scale.linear().domain([0,55]).range(["#c4fcf4", "#2100e0"]);
 
-var svg_rev_demo = d3.select("#election_num_map")
+var svg_rev_demo = d3.select("#map_area")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
-
-var legend = d3.select("#election_num_map")
-        .append("div")
-        .attr('id', 'legend')
-        .selectAll('div')
-        .data(election_threshold)
-        .enter()
-        .append('div')
-        .attr('class', 'flex_box');
-
-legend.append('div')
-        .attr('class', 'legend_color')
-        .style('background-color', function(d, i) {
-            return election_color(election_threshold[i]);
-        });
-
-legend.append('div')
-        .attr('class', 'legend_text')
-        .text(function(d, i) {
-            var min = 0;
-            if (i > 0) {
-                min = election_threshold[i - 1];
-                return  '' + (min + 1) + '~' + d;
-            } else {
-                return  '' + min + '~' + d + '';
-            }
-        });
-
-var demographics = d3.select("#election_num_map")
-        .append("div")
-        .attr("id", "demographics_area")
-        .append("div")
-        .style('opacity', 0)
-        .attr('id', 'demographics');
-
-var state_name = demographics
-        .append('div')
-        .attr('id', 'state_name');
-
-var election_num = demographics
-        .append('div')
-        .attr('id', 'election_num');
 
 // draw maps
 d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
@@ -58,11 +16,26 @@ d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
         election_min = d3.min(data, function (d) {return parseInt(d['Elector_2016']);});
         election_max = d3.max(data, function (d) {return parseInt(d['Elector_2016']);});
         var elections = d3.map(data, function(d){
-          return d.name;
+            return d.name;
         });
         elections.forEach(function(k,v){
-          this[k] = v;
+            this[k] = v;
         });
+    
+    // ここでアクション
+    d3.select('#button_area')
+        .selectAll('div')
+        .data(data)
+        .enter()
+        .append('div')
+        .attr('class', 'state_button')
+        .attr('id', function(d) {
+            return formatted_state_name(d.name) + '_button';
+        })
+        .on('click', function(d) {
+            button_action(d);
+        })
+        .text(function(d) {return d.short_name});
 
     d3.json(DATA_PATH + "us_states.json", function(error, json) {
         if (error) throw error;
@@ -80,6 +53,9 @@ d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
             .attr("class", function(d) { return "subunit " + d.id; })
             .attr("d", path)
             .attr("class", "land-boundary")
+            .attr("id", function(d){
+                return formatted_state_name(d.properties.name);
+            })
             .style("stroke", "#020084")
             .style("stroke-width", .5)
             .style("opacity", opacity)
@@ -98,10 +74,6 @@ d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
                                     ")";
                             });
                     }
-                if (elections[d.properties.name]) {
-                    return getStatesColor(elections, d.properties.name);
-                }
-                return 'rgb(0,0,0)'
             })
             .on('mouseover', function(d) {
                 elector_num = elections[d.properties.name]['Elector_2016'];
@@ -250,12 +222,32 @@ d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
             .style('color', 'white')
             .text('選挙人 ' + elector_num);
     });
-});
-
-function getStatesColor (elections, name) {
-    for (var i = 0; i < election_threshold.length; i++) {
-        if (parseInt(elections[name]['Elector_2016']) <= election_threshold[i]) {
-            return election_color(election_threshold[i])
+    function getStatesColor (elections, name) {
+        for (var i = 0; i < election_threshold.length; i++) {
+            if (parseInt(elections[name]['Elector_2016']) <= election_threshold[i]) {
+                return election_color(election_threshold[i])
+            }
         }
     }
-}
+
+
+    function fillStates (state_name) {
+        d3.select('#' + state_name)
+            .style("fill", function(d) {
+                if (elections[d.properties.name]) {
+                    return getStatesColor(elections, d.properties.name);
+                }
+            })
+
+    }
+
+
+    function formatted_state_name (state_name) {
+        return state_name.toLowerCase().replace(/ /g,"-");
+    }
+
+    function button_action (d) {
+        fillStates(formatted_state_name(d.name));
+    }
+});
+

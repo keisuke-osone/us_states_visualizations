@@ -8,6 +8,14 @@ path {
     display: flex;
 }
 
+.state_button {
+    background-color: #444;
+    color: #fff;
+    height: 30px;
+    margin: 5px;
+    width: 40px;
+}
+
 /* 系列のスタイル */
 #legend {
     background-color: #ffffff;
