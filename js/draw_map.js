@@ -76,7 +76,7 @@ d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
                     }
             })
             .on('mouseover', function(d) {
-                elector_num = elections[d.properties.name]['Elector_2016'];
+                metrics = elections[d.properties.name]['Elector_2016'];
                 jpn_name = elections[d.properties.name]['JPN_expression'];
                 demographics.style('opacity', 1.0);
                 d3.select(this)
@@ -99,11 +99,6 @@ d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
                             return jpn_name + '州 (' + d.properties.name + ')'
                         }
                     });
-                election_num
-                    .transition()
-                    .duration(200)
-                    .style('color', 'white')
-                    .text('選挙人 ' + elector_num);
 
             })
             .on('click', function(d) {
