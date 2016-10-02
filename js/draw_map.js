@@ -10,6 +10,48 @@ var svg_rev_demo = d3.select("#map_area")
         .attr("width", width)
         .attr("height", height);
 
+var legend = d3.select("#map_area")
+        .append("div")
+        .attr('id', 'legend')
+        .selectAll('div')
+        .data(election_threshold)
+        .enter()
+        .append('div')
+        .attr('class', 'flex_box');
+
+legend.append('div')
+        .attr('class', 'legend_color')
+        .style('background-color', function(d, i) {
+            return election_color(election_threshold[i]);
+        });
+
+legend.append('div')
+        .attr('class', 'legend_text')
+        .text(function(d, i) {
+            var min = 0;
+            if (i > 0) {
+                min = election_threshold[i - 1];
+                return  '' + (min + 1) + '~' + d;
+            } else {
+                return  '' + min + '~' + d + '';
+            }
+        });
+
+var demographics = d3.select("#map_area")
+        .append("div")
+        .attr("id", "demographics_area")
+        .append("div")
+        .style('opacity', 0)
+        .attr('id', 'demographics');
+
+var state_name = demographics
+        .append('div')
+        .attr('id', 'state_name');
+
+var election_num = demographics
+        .append('div')
+        .attr('id', 'election_num');
+
 // draw maps
 d3.csv(DATA_PATH + "presidential_election.csv", function(error, data) {
     if (error) throw error;
